@@ -1,0 +1,26 @@
+<div class="chat-container">
+  <div class="sidebar">
+    <app-conversation-list />
+  </div>
+  
+  <div class="chat-area">
+    @if (conversationService.activeConversation()) {
+      <div class="chat-header">
+        <h3>{{ conversationService.activeConversation()?.title || 'New Conversation' }}</h3>
+      </div>
+      
+      <div class="messages-area">
+        <app-message-list />
+      </div>
+      
+      <app-message-input />
+    } @else {
+      <div class="no-conversation">
+        <div class="no-conversation-content">
+          <h3>Welcome to Chatbot Prepa</h3>
+          <p>Select a conversation from the sidebar or create a new one to get started.</p>
+        </div>
+      </div>
+    }
+  </div>
+</div>

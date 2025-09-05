@@ -8,4 +8,5 @@ export interface ChatServiceInterface {
   getConversation(conversationId: string): Observable<{conversation: Conversation, messages: Message[]}>;
   sendMessage(conversationId: string, request: SendMessageRequest): Observable<Message>;
   deleteConversation(conversationId: string): Observable<void>;
+  newMessage$: Observable<Message>;
 }

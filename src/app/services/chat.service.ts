@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
+import { Observable, map, EMPTY } from 'rxjs';
 import { 
   Conversation, 
   CreateConversationRequest, 
@@ -22,6 +22,10 @@ import { ChatServiceInterface } from './chat.interface';
 })
 export class ChatService implements ChatServiceInterface {
   private baseUrl = 'http://localhost:8080/api';
+
+  // For now, ChatService doesn't support real-time events
+  // This would be implemented with WebSocket or SSE in a real backend
+  public newMessage$ = EMPTY;
 
   constructor(private http: HttpClient) {}
 

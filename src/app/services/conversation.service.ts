@@ -1,4 +1,5 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Conversation } from '../models/conversation.interface';
 import { Message } from '../models/message.interface';
 import { ChatService } from './chat.service';
@@ -14,11 +15,17 @@ export class ConversationService {
   private activeConversationIdSignal = signal<string | null>(null);
   private messagesSignal = signal<Message[]>([]);
   private loadingSignal = signal(false);
+  private sendingMessageSignal = signal(false);
+  private waitingForResponseSignal = signal(false);
+  
+  private destroyRef = inject(DestroyRef);
 
   readonly conversations = this.conversationsSignal.asReadonly();
   readonly activeConversationId = this.activeConversationIdSignal.asReadonly();
   readonly messages = this.messagesSignal.asReadonly();
   readonly loading = this.loadingSignal.asReadonly();
+  readonly sendingMessage = this.sendingMessageSignal.asReadonly();
+  readonly waitingForResponse = this.waitingForResponseSignal.asReadonly();
 
   readonly activeConversation = computed(() => {
     const activeId = this.activeConversationIdSignal();
@@ -31,7 +38,27 @@ export class ConversationService {
 
   constructor(private chatService: ChatService, private mockChatService: MockChatService) {
     this.apiService = environment.useMockService ? this.mockChatService : this.chatService;
+    this.setupNewMessageSubscription();
     this.loadConversations();
+  }
+
+  private setupNewMessageSubscription(): void {
+    this.apiService.newMessage$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (newMessage) => {
+          const activeId = this.activeConversationIdSignal();
+          if (activeId && newMessage.conversationId === activeId) {
+            this.messagesSignal.update(messages => [...messages, newMessage]);
+            this.waitingForResponseSignal.set(false);
+            console.log('New message added to UI:', newMessage);
+          }
+        },
+        error: (error) => {
+          console.error('Error receiving new message:', error);
+          this.waitingForResponseSignal.set(false);
+        }
+      });
   }
 
   loadConversations(): void {
@@ -133,12 +160,48 @@ export class ConversationService {
     const activeId = this.activeConversationIdSignal();
     if (!activeId) return;
 
+    // Create the user message immediately for UI
+    const userMessage: Message = {
+      id: `temp_${Date.now()}`, // Temporary ID
+      conversationId: activeId,
+      content: content,
+      role: 'user',
+      timestamp: new Date()
+    };
+
+    // Add user message to UI immediately
+    this.messagesSignal.update(messages => [...messages, userMessage]);
+    this.sendingMessageSignal.set(true);
+    console.log('User message added to UI immediately:', userMessage);
+
     this.apiService.sendMessage(activeId, { content }).subscribe({
       next: (message) => {
-        this.messagesSignal.update(messages => [...messages, message]);
+        // Replace the temporary message with the real one from server
+        this.messagesSignal.update(messages => 
+          messages.map(msg => 
+            msg.id === userMessage.id ? message : msg
+          )
+        );
+        this.sendingMessageSignal.set(false);
+        this.waitingForResponseSignal.set(true);
+        console.log('User message confirmed by server, waiting for response:', message);
+        
+        // Safety timeout to stop waiting indicator if no response comes
+        setTimeout(() => {
+          if (this.waitingForResponseSignal()) {
+            console.log('Response timeout, stopping wait indicator');
+            this.waitingForResponseSignal.set(false);
+          }
+        }, 10000); // 10 second timeout
       },
       error: (error) => {
         console.error('Error sending message:', error);
+        // Remove the temporary message on error
+        this.messagesSignal.update(messages => 
+          messages.filter(msg => msg.id !== userMessage.id)
+        );
+        this.sendingMessageSignal.set(false);
+        this.waitingForResponseSignal.set(false);
       }
     });
   }

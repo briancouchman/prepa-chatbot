@@ -1,0 +1,124 @@
+:host {
+  height: 100%;
+  display: block;
+}
+
+.messages-wrapper {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+}
+
+.messages-wrapper::-webkit-scrollbar {
+  width: 6px;
+}
+
+.messages-wrapper::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.messages-wrapper::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.messages-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+.messages-container {
+  padding: 1rem;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.message {
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.message-user {
+  align-items: flex-end;
+}
+
+.message-user .message-content {
+  background: #007ad9;
+  color: white;
+  margin-left: 25%;
+}
+
+.message-assistant {
+  align-items: flex-start;
+}
+
+.message-assistant .message-content {
+  background: #f8f9fa;
+  color: #333;
+  margin-right: 25%;
+}
+
+.message-content {
+  padding: 0.75rem 1rem;
+  border-radius: 18px;
+  max-width: 75%;
+  word-wrap: break-word;
+  
+  // Formatage pour les listes
+  ::ng-deep ul, ::ng-deep ol {
+    margin: 0.5rem 0;
+    padding-left: 1.25rem;
+  }
+  
+  ::ng-deep li {
+    margin: 0.25rem 0;
+    line-height: 1.4;
+  }
+  
+  // Formatage pour le code
+  ::ng-deep code {
+    background: rgba(0, 0, 0, 0.1);
+    padding: 0.125rem 0.25rem;
+    border-radius: 3px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+  }
+  
+  ::ng-deep pre {
+    background: rgba(0, 0, 0, 0.05);
+    padding: 0.75rem;
+    border-radius: 8px;
+    margin: 0.5rem 0;
+    overflow-x: auto;
+    
+    code {
+      background: none;
+      padding: 0;
+    }
+  }
+  
+  // Formatage pour le texte en gras/italique
+  ::ng-deep strong {
+    font-weight: 600;
+  }
+  
+  ::ng-deep em {
+    font-style: italic;
+  }
+}
+
+.message-timestamp {
+  font-size: 0.75rem;
+  color: #6c757d;
+  margin-top: 0.25rem;
+  padding: 0 1rem;
+}
+
+.empty-state, .loading-state {
+  text-align: center;
+  color: #6c757d;
+  margin-top: 2rem;
+}

@@ -1,0 +1,30 @@
+<div class="messages-wrapper">
+  <div class="messages-container" #messagesContainer>
+    @if (conversationService.messages().length === 0 && !conversationService.loading()) {
+      <div class="empty-state">
+        <p>Start a conversation by sending a message below.</p>
+      </div>
+    }
+    
+    @if (conversationService.loading()) {
+      <div class="loading-state">
+        <p>Loading messages...</p>
+      </div>
+    }
+    
+    @for (message of conversationService.messages(); track message.id) {
+      <div class="message" [ngClass]="'message-' + message.role">
+        <div class="message-content">
+          @if (message.role === 'assistant') {
+            <div [innerHTML]="messageFormatter.formatMessage(message.content)"></div>
+          } @else {
+            {{ message.content }}
+          }
+        </div>
+        <div class="message-timestamp">
+          {{ message.timestamp | date:'short' }}
+        </div>
+      </div>
+    }
+  </div>
+</div>

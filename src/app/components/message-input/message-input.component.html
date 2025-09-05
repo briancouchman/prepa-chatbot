@@ -1,0 +1,25 @@
+<div class="message-input-container">
+  <input 
+    type="text" 
+    pInputText 
+    [(ngModel)]="messageContent"
+    (keydown.enter)="sendMessage()"
+    placeholder="Type your message..."
+    [disabled]="!conversationService.activeConversation() || conversationService.loading() || conversationService.sendingMessage()"
+    class="message-input"
+  />
+  <p-button 
+    [icon]="conversationService.sendingMessage() ? 'pi pi-spin pi-spinner' : 'pi pi-send'"
+    (onClick)="sendMessage()"
+    [disabled]="!messageContent().trim() || !conversationService.activeConversation() || conversationService.loading() || conversationService.sendingMessage()"
+    [loading]="conversationService.sendingMessage()"
+    class="send-button"
+  />
+</div>
+
+@if (conversationService.waitingForResponse()) {
+  <div class="waiting-indicator">
+    <i class="pi pi-spin pi-spinner"></i>
+    <span>Assistant is typing...</span>
+  </div>
+}
